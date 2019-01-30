@@ -1,0 +1,126 @@
+From 13008b8535120c4a35f0bc8951895455cd706290 Mon Sep 17 00:00:00 2001
+From: Irina Tirdea <irina.tirdea@intel.com>
+Date: Fri, 31 Jul 2015 17:25:44 +0300
+Subject: [PATCH] Input: goodix - add sysfs interface to dump config
+
+Goodix devices have a configuration information register area that
+specifies various parameters for the device. The configuration information
+has a specific format described in the Goodix datasheet. It includes X/Y
+resolution, maximum supported touch points, interrupt flags, various
+sesitivity factors and settings for advanced features (like gesture
+recognition).
+
+Export a sysfs interface that would allow reading the configuration
+information. This interface will be available for all devices (even
+if they cannot overwrite this configuration because the gpio pins are
+not properly connected).
+
+Signed-off-by: Irina Tirdea <irina.tirdea@intel.com>
+---
+ drivers/input/touchscreen/goodix.c | 59 ++++++++++++++++++++++++++++--
+ 1 file changed, 55 insertions(+), 4 deletions(-)
+
+diff --git a/drivers/input/touchscreen/goodix.c b/drivers/input/touchscreen/goodix.c
+index 240b16f3ee979..080a3c2cb27c6 100644
+--- a/drivers/input/touchscreen/goodix.c
++++ b/drivers/input/touchscreen/goodix.c
+@@ -430,6 +430,41 @@ static int goodix_reset(struct goodix_ts_data *ts)
+ 	return 0;
+ }
+ 
++static ssize_t goodix_dump_config_show(struct device *dev,
++				       struct device_attribute *attr, char *buf)
++{
++	struct goodix_ts_data *ts = dev_get_drvdata(dev);
++	u8 config[GOODIX_CONFIG_MAX_LENGTH];
++	int error, count = 0, i;
++
++	if (ts->gpiod_int && ts->gpiod_rst)
++		wait_for_completion(&ts->firmware_loading_complete);
++
++	error = goodix_i2c_read(ts->client, GOODIX_REG_CONFIG_DATA,
++				config, ts->cfg_len);
++	if (error) {
++		dev_warn(&ts->client->dev,
++			 "Error reading config (%d)\n",  error);
++		return error;
++	}
++
++	for (i = 0; i < ts->cfg_len; i++)
++		count += scnprintf(buf + count, PAGE_SIZE - count, "%02x ",
++				   config[i]);
++	return count;
++}
++
++static DEVICE_ATTR(dump_config, S_IRUGO, goodix_dump_config_show, NULL);
++
++static struct attribute *goodix_attrs[] = {
++	&dev_attr_dump_config.attr,
++	NULL
++};
++
++static const struct attribute_group goodix_attr_group = {
++	.attrs = goodix_attrs,
++};
++
+ /**
+  * goodix_get_gpio_config - Get GPIO config from ACPI/DT
+  *
+@@ -734,12 +769,22 @@ static int goodix_ts_probe(struct i2c_client *client,
+ 
+ 	ts->cfg_len = goodix_get_cfg_len(ts->id);
+ 
++	error = sysfs_create_group(&client->dev.kobj,
++				   &goodix_attr_group);
++	if (error) {
++		dev_err(&client->dev, "Failed to create sysfs group: %d\n",
++			error);
++		return error;
++	}
++
+ 	if (ts->gpiod_int && ts->gpiod_rst) {
+ 		/* update device config */
+ 		ts->cfg_name = devm_kasprintf(&client->dev, GFP_KERNEL,
+ 					      "goodix_%d_cfg.bin", ts->id);
+-		if (!ts->cfg_name)
+-			return -ENOMEM;
++		if (!ts->cfg_name) {
++			error = -ENOMEM;
++			goto err_sysfs_remove_group;
++		}
+ 
+ 		error = request_firmware_nowait(THIS_MODULE, true, ts->cfg_name,
+ 						&client->dev, GFP_KERNEL, ts,
+@@ -748,17 +793,21 @@ static int goodix_ts_probe(struct i2c_client *client,
+ 			dev_err(&client->dev,
+ 				"Failed to invoke firmware loader: %d\n",
+ 				error);
+-			return error;
++			goto err_sysfs_remove_group;
+ 		}
+ 
+ 		return 0;
+ 	} else {
+ 		error = goodix_configure_dev(ts);
+ 		if (error)
+-			return error;
++			goto err_sysfs_remove_group;
+ 	}
+ 
+ 	return 0;
++
++err_sysfs_remove_group:
++	sysfs_remove_group(&client->dev.kobj, &goodix_attr_group);
++	return error;
+ }
+ 
+ static int goodix_ts_remove(struct i2c_client *client)
+@@ -768,6 +817,8 @@ static int goodix_ts_remove(struct i2c_client *client)
+ 	if (ts->gpiod_int && ts->gpiod_rst)
+ 		wait_for_completion(&ts->firmware_loading_complete);
+ 
++	sysfs_remove_group(&client->dev.kobj, &goodix_attr_group);
++
+ 	return 0;
+ }
+ 

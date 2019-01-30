@@ -1,0 +1,213 @@
+41 version
+
+70 xdim_l \ __ 2160
+08 xdim_h /
+78 ydim_l \ __ 1400
+05 ydim_h /
+0a touchcount = 10
+
+7d module_switch1 => stylus_priority = 1, stretch_rank = 3, X2Y = 1, Sito = 1 (?)
+01 module_switch2
+01 shake_count
+08 filter
+19 large_touch = 25 (?)
+0f noise_reduction
+
+64 screen_touch_level (threshold)
+46 screen_leave_level (threshold)
+
+03 low_power_control: time to low power mode (s)
+05 refresh_rate: coordinate report rate (5+N ms)
+
+00 x_threshold
+00 y_threshold
+00 x_speed_limit
+00 y_speed_limit
+
+12 blank_top_bottom
+23 blank_left_right
+
+00 mini_filter 
+18 stretch_r0
+1a stretch_r1
+1e stretch_r2
+14 stretch_rm
+
+95 drv_groupa_num
+35 drv_groupb_num
+ff sensor_num
+
+34 freqa_factor = 52
+36 freqb_factor = 54
+
+31 bitfreq_l \ __ 3377 Hz
+0d bitfreq_h /
+
+00 sensortime_l
+00 sensortime_h
+
+01 tx_gain
+9b rx_gain
+03 dump_shift
+1d drv_frame_control
+
+16 stylus_stretch_r0
+18 stylus_stretch_r1
+04 stylus_stretch_r2
+
+a0 stylus_pga_r => pga_r_en = 1, freqsel = 2 (400 khz), pga_r = 0
+82 stylus_rx_gain
+03 stylus_dump_shift
+41 stylus_driver_touch_level
+28 stylus_sensor_touch_level
+1e stylus_control (30 s?)
+00 stylus_decode_level
+00 module_switch3
+
+28 freq_hopping_start (80 kHz)
+50 freq_hopping_end (160 kHz)
+94 noise_detect_times
+c5 hopping_flag
+02 hopping_threshold
+07 noise_threshold
+
+00 nc
+00 nc
+
+04 hopping_seg1_bitfreql \ __ 36100
+8d hopping_seg1_bitfreql /
+2a hopping_seg1_factor     -- 
+00 hopping_seg2_bitfreql \ __ 33536
+83 hopping_seg2_bitfreql /
+31 hopping_seg2_factor
+00 hopping_seg3_bitfreql \ __ 31744
+7c hopping_seg3_bitfreql /
+38 hopping_seg3_factor
+00 hopping_seg4_bitfreql \ __ 29952
+75 hopping_seg4_bitfreql /
+41 hopping_seg4_factor
+00 hopping_seg5_bitfreql \ __ 28672
+70 hopping_seg5_bitfreql /
+4a hopping_seg5_factor
+
+00 nc
+70 nc
+
+80 key 1
+00 key 2
+00 key 3
+00 key 4
+f0 key_area
+4a key_touch_level
+3a key_leave_level
+ff key_sens
+ff key_sens
+27 key_restrain
+
+ff nc
+00 nc
+00 nc
+4a nc
+00 nc
+
+00 prox
+00  "
+00  "
+00  "
+00  "
+00  "
+00  "
+00  "
+00  "
+00  "
+00  "
+00  "
+
+00 nc
+00 nc
+00 nc
+00 nc
+00 nc
+00 nc
+00 nc
+00 nc
+00 nc
+
+00 sensor_ch0
+01
+02
+03
+04
+05
+06
+07
+08
+09
+0a
+0b
+0c
+0d sensor_ch13
+
+0e nc
+0f nc
+10 nc
+11 nc
+12 nc
+13 nc
+14 nc
+15 nc
+16 nc
+17 nc
+18 nc
+19 nc
+1a nc
+1b nc
+1c nc
+1d nc
+
+2a driver_ch0
+29
+28
+27
+26
+25
+24
+23
+22
+21
+20
+1f
+1e
+1d
+1c
+1b
+19
+18
+17
+16
+15
+14 driver_ch21
+
+13 nc
+12 nc
+11 nc
+10 nc
+0f nc
+0e nc
+0d nc
+0c nc
+0b nc
+0a nc
+09 nc
+08 nc
+07 nc
+06 nc
+05 nc
+04 nc
+03 nc
+02 nc
+01 nc
+00 nc
+
+0x0FF: 5c config_checksum
+0x100: 00 config_fresh
